@@ -1,0 +1,11 @@
+# Go to repo
+cd /home/pk21271/msciproject
+
+# Stage the commits
+git add .
+
+# Commit them with message
+git commit -m "Your commit message"
+
+# Pushes commits to the repo
+git push origin main
