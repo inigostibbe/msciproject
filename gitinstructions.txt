@@ -3,9 +3,14 @@ cd /home/pk21271/msciproject
 
 # Stage the commits
 git add .
+git status
 
 # Commit them with message
-git commit -m "Your commit message"
+git commit -m "EDITS"
 
 # Pushes commits to the repo
+git push origin main
+
+git add .
+git commit -m "EDITS"
 git push origin main
