@@ -11,6 +11,7 @@ git commit -m "EDITS"
 # Pushes commits to the repo
 git push origin main
 
+cd /home/pk21271/msciproject
 git add .
 git commit -m "EDITS"
 git push origin main
