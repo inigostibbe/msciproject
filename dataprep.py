@@ -40,3 +40,6 @@ def prep(signal_data, background_data):
     data['cleanedJet_phi_range'] = data['cleanedJet_phi'].apply(lambda x: np.max(x) - np.min(x))
 
     return data
+
+def flatandpadd(data):
+    
