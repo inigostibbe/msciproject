@@ -1,0 +1,91 @@
+datasets:
+- WW
+- WZ
+- ZZ
+- WWW_4F
+- WWZ_4F
+- WZZ
+- ZZZ
+- DYJetsToLL_M-50_HT-70to100
+- DYJetsToLL_M-50_HT-100to200
+- DYJetsToLL_M-50_HT-200to400
+- DYJetsToLL_M-50_HT-400to600
+- DYJetsToLL_M-50_HT-600to800
+- DYJetsToLL_M-50_HT-800to1200
+- DYJetsToLL_M-50_HT-1200to2500
+- DYJetsToLL_M-50_HT-2500toInf
+- WJetsToLNu_HT-70To100
+- WJetsToLNu_HT-100To200
+- WJetsToLNu_HT-200To400
+- WJetsToLNu_HT-400To600
+- WJetsToLNu_HT-600To800
+- WJetsToLNu_HT-800To1200
+- WJetsToLNu_HT-1200To2500
+- WJetsToLNu_HT-2500ToInf
+- ZJetsToNuNu_HT-100To200
+- ZJetsToNuNu_HT-200To400
+- ZJetsToNuNu_HT-400To600
+- ZJetsToNuNu_HT-600To800
+- ZJetsToNuNu_HT-800To1200
+- ZJetsToNuNu_HT-1200To2500
+- ZJetsToNuNu_HT-2500ToInf
+- EWKWMinus2Jets_WToLNu_M-50
+- EWKWPlus2Jets_WToLNu_M-50
+- EWKZ2Jets_ZToLL_M-50
+- EWKZ2Jets_ZToNuNu_M-50
+- ST_s-channel_4f_hadronicDecays
+- ST_s-channel_4f_leptonDecays
+- ST_t-channel_antitop_4f_InclusiveDecays
+- ST_t-channel_top_4f_InclusiveDecays
+- ST_tW_antitop_5f_inclusiveDecays
+- ST_tW_top_5f_inclusiveDecays
+- TTTo2L2Nu
+- TTToHadronic
+- TTToSemiLeptonic
+- TTWJetsToLNu
+- TTWJetsToQQ
+- TTZToLLNuNu_M-10
+- TTZToQQ
+- ttHTobb_M125
+- ttHToNonbb_M125
+- ZH_HToBB_ZToBB_M-125
+- ZH_HToBB_ZToLL_M-125
+- ZH_HToBB_ZToNuNu_M-125
+- ttH_HToInvisible_M125
+early_stopping:
+  patience: 20
+embedding:
+  embed_dims:
+  - 32
+  - 32
+  - 64
+  normalize_input: true
+loss_fn:
+  lam: 0.1
+  weighted: true
+lr_sched:
+  cooldown: 0
+  factor: 0.2
+  min_lr: 1.0e-08
+  mode: min
+  patience: 5
+  threshold: 0.0
+  threshold_mode: rel
+model:
+  class_layers: 3
+  dnn_layers: 3
+  dropout: 0.1
+  encoder_layers: 4
+  expansion_factor: 2
+  num_heads: 8
+  output_dim: 1
+sequence_length: 10
+training:
+  batch_size: 1024
+  epochs: 500
+  lr: 0.0001
+years:
+- 2015
+- 2016
+- 2017
+- 2018
