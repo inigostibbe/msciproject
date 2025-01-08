@@ -1,0 +1,145 @@
+loss_fn: 
+  lam: 0.1
+  weighted: True
+
+embedding:
+  embed_dims: [32, 32, 32]
+  normalize_input: True
+
+model:
+  output_dim : 1
+  expansion_factor: 2
+  encoder_layers: 3
+  class_layers: 3
+  dnn_layers: 3
+  num_heads: 8
+  # hidden_activation: nn.Gelu
+  # output_activation: None
+  dropout: 0.1
+
+training:
+  epochs: 1
+  lr: 0.0001
+  batch_size: 1024
+
+lr_sched: 
+  mode: 'min'
+  factor: 0.6
+  patience: 5
+  threshold: 0.0
+  threshold_mode: 'rel'
+  cooldown: 0
+  min_lr: 0.00000001    # 1e-8
+
+early_stopping:
+  patience: 10
+
+sequence_length: 6
+
+years: [2016] #, 2016, 2017, 2018]
+
+datasets:
+  - WW
+  - WZ
+  - ZZ
+  - WWW_4F
+  - WWZ_4F
+  - WZZ
+  - ZZZ
+
+  ### LO ###
+  - DYJetsToLL_M-50_HT-70to100
+  - DYJetsToLL_M-50_HT-100to200 
+  - DYJetsToLL_M-50_HT-200to400 
+  - DYJetsToLL_M-50_HT-400to600 
+  - DYJetsToLL_M-50_HT-600to800 
+  - DYJetsToLL_M-50_HT-800to1200
+  - DYJetsToLL_M-50_HT-1200to2500
+  - DYJetsToLL_M-50_HT-2500toInf
+  # - WJetsToLNu_inclusive_LO
+  # - WJetsToLNu_inclusive_NLO
+  - WJetsToLNu_HT-70To100
+  - WJetsToLNu_HT-100To200
+  - WJetsToLNu_HT-200To400
+  - WJetsToLNu_HT-400To600
+  - WJetsToLNu_HT-600To800
+  - WJetsToLNu_HT-800To1200
+  - WJetsToLNu_HT-1200To2500
+  - WJetsToLNu_HT-2500ToInf
+  - ZJetsToNuNu_HT-100To200
+  - ZJetsToNuNu_HT-200To400
+  - ZJetsToNuNu_HT-400To600
+  - ZJetsToNuNu_HT-600To800
+  - ZJetsToNuNu_HT-800To1200
+  - ZJetsToNuNu_HT-1200To2500
+  - ZJetsToNuNu_HT-2500ToInf
+
+  - EWKWMinus2Jets_WToLNu_M-50
+  - EWKWPlus2Jets_WToLNu_M-50
+  - EWKZ2Jets_ZToLL_M-50
+  - EWKZ2Jets_ZToNuNu_M-50
+
+  # - QCD_HT50to100
+  # - QCD_HT100to200
+  # - QCD_HT200to300
+  # - QCD_HT300to500
+  # - QCD_HT500to700
+  # - QCD_HT700to1000
+  # - QCD_HT1000to1500
+  # - QCD_HT1500to2000
+  # - QCD_HT2000toInf
+
+  - ST_s-channel_4f_hadronicDecays
+  - ST_s-channel_4f_leptonDecays
+  - ST_t-channel_antitop_4f_InclusiveDecays
+  - ST_t-channel_top_4f_InclusiveDecays
+  - ST_tW_antitop_5f_inclusiveDecays
+  - ST_tW_top_5f_inclusiveDecays
+
+  # - TTTo2L2Nu
+  # - TTToHadronic
+  # - TTToSemiLeptonic
+
+  # - TTGJets
+  - TTWJetsToLNu
+  - TTWJetsToQQ
+  - TTZToLLNuNu_M-10
+  - TTZToQQ
+  # - TTZToBB
+  - ttHTobb_M125
+  - ttHToNonbb_M125
+
+  # - ZH_HToBB_ZToBB_M-125
+  # - ZH_HToBB_ZToQQ_M-125
+  # - ZH_HToBB_ZToQQ_M125
+  # - ZH_HToBB_ZToLL_M-125
+  # - ZH_HToBB_ZToNuNu_M-125
+
+  # - GluGlu_HToInvisible_M125
+  - ttH_HToInvisible_M125
+  # - ggZH_ZToQQ_HToInvisible_M125
+  # - ggZH_incl_125
+  # - ZH_ZToQQ_HToInvisible_M125
+  # - WminusH_WToQQ_HToInvisible_M125
+  # - WminusH_WToQQ_HToInvisible_M125
+  # - VBF_HToInvisible_M125
+
+  ### NLO ###
+  # DYJetsToLL_LHEFilterPtZ-0To50_MatchEWPDG20: dy
+  # DYJetsToLL_LHEFilterPtZ-50To100_MatchEWPDG20: dy
+  # DYJetsToLL_LHEFilterPtZ-100To250_MatchEWPDG20: dy
+  # DYJetsToLL_LHEFilterPtZ-250To400_MatchEWPDG20: dy
+  # DYJetsToLL_LHEFilterPtZ-400To650_MatchEWPDG20: dy
+  # DYJetsToLL_LHEFilterPtZ-650ToInf_MatchEWPDG20: dy
+  # WJetsToLNu_Pt-100To250_MatchEWPDG20: w_lnu
+  # WJetsToLNu_Pt-250To400_MatchEWPDG20: w_lnu
+  # WJetsToLNu_Pt-400To600_MatchEWPDG20: w_lnu
+  # WJetsToLNu_Pt-600ToInf_MatchEWPDG20: w_lnu
+  # Z1JetsToNuNu_M-50_LHEFilterPtZ-50To150_MatchEWPDG20: z_nunu
+  # Z1JetsToNuNu_M-50_LHEFilterPtZ-150To250_MatchEWPDG20: z_nunu
+  # Z1JetsToNuNu_M-50_LHEFilterPtZ-250To400_MatchEWPDG20: z_nunu
+  # Z1JetsToNuNu_M-50_LHEFilterPtZ-400ToInf_MatchEWPDG20: z_nunu
+  # Z2JetsToNuNu_M-50_LHEFilterPtZ-50To150_MatchEWPDG20: z_nunu
+  # Z2JetsToNuNu_M-50_LHEFilterPtZ-150To250_MatchEWPDG20: z_nunu
+  # Z2JetsToNuNu_M-50_LHEFilterPtZ-250To400_MatchEWPDG20: z_nunu
+  # Z2JetsToNuNu_M-50_LHEFilterPtZ-400ToInf_MatchEWPDG20: z_nunu
