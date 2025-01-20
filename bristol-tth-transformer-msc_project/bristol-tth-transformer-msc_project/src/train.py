@@ -218,9 +218,18 @@ plots_callback = EpochEndCallback(
     ]
 )
 
+# ## Logger ## (OLD VERSION)
+# logger = CometLogger(
+#     api_key = os.environ.get("COMET_API_KEY"),
+#     project_name = "AnalysisObjectTransformer",
+#     experiment_name = "Setup",
+#     save_dir = "./comet_logs",  # Specify where to save Comet logs if offline
+#     offline = False  # Set to True for offline mode
+)
+
 ## Logger ##
 logger = CometLogger(
-    api_key = os.environ.get("COMET_API_KEY"),
+    api_key = os.getenv("COMET_API_KEY"),
     project_name = "AnalysisObjectTransformer",
     experiment_name = "Setup",
     save_dir = "./comet_logs",  # Specify where to save Comet logs if offline
