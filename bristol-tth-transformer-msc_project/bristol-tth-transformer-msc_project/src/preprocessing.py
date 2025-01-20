@@ -169,12 +169,12 @@ def apply_reweighting_per_class(df, weight_var="weight_nominal") -> pd.DataFrame
     df["weight_training"] = df[weight_var]
 
     # Proportions of samples
-    weightings = df[["target", weight_var]].groupby("target").sum()
-    counts = df[["target", weight_var]].count()
+    weightings = df[["target", weight_var]].groupby("target").sum() # This adds the weights for each class, so for binary, 2 sets
+    counts = df[["target", weight_var]].count() # This counts the number of events in each class
 
     # Reweight each process separately
     for process in df["target"].unique():
-        w_factor = float(counts.iloc[0]) / float(weightings.loc[process].iloc[0])
+        w_factor = float(counts.iloc[0]) / float(weightings.loc[process].iloc[0]) # Does count sum / weight sum 
         logging.info(f"Reweighting process '{process}' with factor: {w_factor:.0f}")
 
         # Use loc to modify the dataframe in place
