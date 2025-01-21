@@ -11,6 +11,9 @@ import lightning as L
 
 class Embedding(nn.Module):
     def __init__(self, input_dim, embed_dims, normalize_input=True, activation=nn.GELU):
+        # input_dim = train_X.shape[-1],   # Which is 6 as shape = (batch, 10, 6)
+        # embed_dims = [64], 
+
         super().__init__()
         if not isinstance(embed_dims,(tuple,list)):
             embed_dims = [embed_dims]
@@ -24,7 +27,7 @@ class Embedding(nn.Module):
         ]
         for dim_in,dim_out in zip(embed_dims[:-1],embed_dims[1:]):
             layers.append(nn.Linear(dim_in,dim_out))
-            layers.append(activation())
+            layers.append(activation()) 
         self.layers = nn.Sequential(*layers)
 
         self.dim = embed_dims[-1]
@@ -32,7 +35,7 @@ class Embedding(nn.Module):
     def forward(self, x):
         if self.input_bn is not None:
             # x: (batch, seq_len, embed_dim)
-            # batch norm expects (batch, embed_dim, sequence lenght)
+            # batch norm expects (batch, embed_dim, sequence length)
             x = self.input_bn(x.permute(0,2,1).contiguous()).permute(0,2,1).contiguous()
 
         return self.layers(x)
