@@ -181,7 +181,7 @@ class AnalysisObjectTransformer(L.LightningModule):
             cls_tokens = class_block(x,x_cls=cls_tokens,padding_mask=padding_mask,attn_mask=attn_mask)
 
         # Collapse sequence dimension #
-        cls_tokens = cls_tokens.squeeze(1)
+        cls_tokens = cls_tokens.squeeze(1) # This goes from (batch,1,C) to (batch,C) where C=binary output
 
         # Final dnn #
         x = self.dnn(cls_tokens)
@@ -195,27 +195,27 @@ class AnalysisObjectTransformer(L.LightningModule):
 
     def shared_eval(self, batch, batch_idx, suffix):
         inputs, labels, weights, mask, event = batch
-        outputs = self(inputs,padding_mask=mask)
+        outputs = self.forward(inputs,padding_mask=mask) # This was self() before but now self.forward() for clarity
 
         assert self.loss_function is not None
         loss_values = self.loss_function(outputs,labels,event,weights)
         if isinstance(loss_values,dict):
             for loss_name,loss_value in loss_values.items():
-                self.log(f"{suffix}/loss_{loss_name}", loss_value, prog_bar=True)
+                self.log(f"{suffix}/loss_{loss_name}", loss_value, prog_bar=True, on_step=False, on_epoch=True) # CHANGED TO LOG ON EPOCH
             assert 'tot' in loss_values.keys()
             return loss_values['tot']
         elif isinstance(loss_values,list):
             loss_value = sum(loss_values)
-            self.log(f"{suffix}/loss_tot",loss_value, prog_bar=True)
+            self.log(f"{suffix}/loss_tot",loss_value, prog_bar=True, on_step=False, on_epoch=True)
             return sum(loss_values)
         elif torch.is_tensor(loss_values):
-            self.log(f"{suffix}/loss_tot",loss_values, prog_bar=True)
+            self.log(f"{suffix}/loss_tot",loss_values, prog_bar=True, on_step=False, on_epoch=True)
             return loss_values
         else:
             raise TypeError(f'Type {type(loss_values)} of loss not understood')
 
     def training_step(self, batch, batch_idx):
-        return self.shared_eval(batch,batch_idx,'train')
+        return self.shared_eval(batch,batch_idx,'train')    
 
     def validation_step(self, batch, batch_idx):
         return self.shared_eval(batch,batch_idx,'val')
