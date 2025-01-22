@@ -65,7 +65,7 @@ class BCEDecorrelatedLoss(nn.Module):
             event,
             weights * len(weights) / sum(weights)
         )
-
+    
         return {
             'bce': bce_loss_value.mean(),
             'disco': disco_loss_value.mean(),
