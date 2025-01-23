@@ -48,7 +48,7 @@ outdir = f"./model_training/AOTransformer_{current_time}"
 os.makedirs(outdir, exist_ok=False)
 
 # Get training config
-with open("training_config.yaml", "r") as f:
+with open("/home/pk21271/msciproject/bristol-tth-transformer-msc_project/bristol-tth-transformer-msc_project/training_config copy.yaml", "r") as f:
     training_config = yaml.load(f, Loader=yaml.SafeLoader)
 
 ## Specify dataset files to run over ##
@@ -225,7 +225,7 @@ plots_callback = EpochEndCallback(
 #     experiment_name = "Setup",
 #     save_dir = "./comet_logs",  # Specify where to save Comet logs if offline
 #     offline = False  # Set to True for offline mode
-)
+
 
 ## Logger ##
 logger = CometLogger(
@@ -240,7 +240,7 @@ logger = CometLogger(
 trainer = L.Trainer(
     default_root_dir = outdir,
     accelerator = accelerator,
-    devices = [1], q
+    devices = [1],
     max_epochs = epochs,  # Specify the number of epochs
     log_every_n_steps = steps_per_epoch_train,
     check_val_every_n_epoch = 1,  # Check validation every n epochs
