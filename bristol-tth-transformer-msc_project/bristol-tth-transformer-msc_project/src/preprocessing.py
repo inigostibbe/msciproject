@@ -80,7 +80,6 @@ def split_dataframe(df: pd.DataFrame, n_chunks: int):
     return chunks
 
 
-
 def process_chunk(chunk, target_length: int, dtype=np.float32):
     arrays = []
     masks = []
