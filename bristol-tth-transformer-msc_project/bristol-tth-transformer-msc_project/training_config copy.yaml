@@ -58,7 +58,7 @@ datasets:
   # - DYJetsToLL_M-50_HT-2500toInf
   # # - WJetsToLNu_inclusive_LO
   # # - WJetsToLNu_inclusive_NLO
-  # - WJetsToLNu_HT-70To100
+  # - WJetsToLNu_HT-70To100 # Look at this!
   # - WJetsToLNu_HT-100To200
   # - WJetsToLNu_HT-200To400
   # - WJetsToLNu_HT-400To600
@@ -66,7 +66,7 @@ datasets:
   # - WJetsToLNu_HT-800To1200
   # - WJetsToLNu_HT-1200To2500
   # - WJetsToLNu_HT-2500ToInf
-  # - ZJetsToNuNu_HT-100To200
+  # - ZJetsToNuNu_HT-100To200 # Look at this!
   # - ZJetsToNuNu_HT-200To400
   # - ZJetsToNuNu_HT-400To600
   # - ZJetsToNuNu_HT-600To800
@@ -96,7 +96,7 @@ datasets:
   # - ST_tW_antitop_5f_inclusiveDecays
   # - ST_tW_top_5f_inclusiveDecays
 
-  # - TTTo2L2Nu
+  # - TTTo2L2Nu # to two leptons
   # - TTToHadronic
   - TTToSemiLeptonic
 
