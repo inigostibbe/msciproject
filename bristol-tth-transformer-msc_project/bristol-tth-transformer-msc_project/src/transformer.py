@@ -201,15 +201,15 @@ class AnalysisObjectTransformer(L.LightningModule):
         loss_values = self.loss_function(outputs,labels,event,weights)
         if isinstance(loss_values,dict):
             for loss_name,loss_value in loss_values.items():
-                self.log(f"{suffix}/loss_{loss_name}", loss_value, prog_bar=True, on_step=False, on_epoch=True) # CHANGED TO LOG ON EPOCH
+                self.log(f"{suffix}/loss_{loss_name}", loss_value, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True) # CHANGED TO LOG ON EPOCH
             assert 'tot' in loss_values.keys()
             return loss_values['tot']
         elif isinstance(loss_values,list):
             loss_value = sum(loss_values)
-            self.log(f"{suffix}/loss_tot",loss_value, prog_bar=True, on_step=False, on_epoch=True)
+            self.log(f"{suffix}/loss_tot",loss_value, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
             return sum(loss_values)
         elif torch.is_tensor(loss_values):
-            self.log(f"{suffix}/loss_tot",loss_values, prog_bar=True, on_step=False, on_epoch=True)
+            self.log(f"{suffix}/loss_tot",loss_values, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
             return loss_values
         else:
             raise TypeError(f'Type {type(loss_values)} of loss not understood')

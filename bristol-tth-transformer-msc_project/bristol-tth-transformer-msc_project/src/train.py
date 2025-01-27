@@ -10,6 +10,8 @@ from lightning.pytorch.loggers import CometLogger
 
 # Bacis libraries #
 import os
+from dotenv import load_dotenv
+load_dotenv('/home/pk21271/keys/key.env')
 import sys
 import math
 import numpy as np
@@ -101,14 +103,14 @@ train_loader = DataLoader(
     batch_size = batch_size, 
     shuffle = True, 
     #collate_fn = custom_collate, 
-    num_workers = 127,
+    num_workers = 8,
 )
 valid_loader = DataLoader(
     dataset = valid_dataset, 
     batch_size = 10000, # can use larger batches for the GPU 
     shuffle = False, 
     #collate_fn = custom_collate, 
-    num_workers = 127,
+    num_workers = 8,
 )
 
 fig = plot_inputs_per_multiplicity(X,y,pad_mask,bins=100,log=True,show=True)
@@ -238,9 +240,10 @@ logger = CometLogger(
 
 ## Trainer ##
 trainer = L.Trainer(
+    strategy = 'ddp',  # Specify the distributed computing strategy
     default_root_dir = outdir,
     accelerator = accelerator,
-    devices = [1],
+    devices = [1,2], # Here we choose what GPUs to use 
     max_epochs = epochs,  # Specify the number of epochs
     log_every_n_steps = steps_per_epoch_train,
     check_val_every_n_epoch = 1,  # Check validation every n epochs
@@ -288,3 +291,4 @@ fig = plot_roc(labels, preds, outdir=outdir,show=True)
 # fig = plot_roc(labels, preds, outdir=outdir,show=True, sample_weights=weights)
 
 print("Done")
+# %%

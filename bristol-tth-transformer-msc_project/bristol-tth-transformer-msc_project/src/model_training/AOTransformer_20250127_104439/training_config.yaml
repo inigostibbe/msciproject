@@ -1,0 +1,35 @@
+datasets:
+- TTToSemiLeptonic
+- ttH_HToInvisible_M125
+early_stopping:
+  patience: 10
+embedding:
+  embed_dims:
+  - 64
+  normalize_input: true
+loss_fn:
+  lam: 0.1
+  weighted: true
+lr_sched:
+  cooldown: 0
+  factor: 0.6
+  min_lr: 1.0e-08
+  mode: min
+  patience: 5
+  threshold: 0.0
+  threshold_mode: rel
+model:
+  class_layers: 3
+  dnn_layers: 3
+  dropout: 0.1
+  encoder_layers: 3
+  expansion_factor: 2
+  num_heads: 8
+  output_dim: 1
+sequence_length: 6
+training:
+  batch_size: 1024
+  epochs: 100
+  lr: 0.0001
+years:
+- 2018
