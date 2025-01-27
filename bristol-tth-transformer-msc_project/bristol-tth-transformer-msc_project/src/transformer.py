@@ -201,7 +201,7 @@ class AnalysisObjectTransformer(L.LightningModule):
         loss_values = self.loss_function(outputs,labels,event,weights)
         if isinstance(loss_values,dict):
             for loss_name,loss_value in loss_values.items():
-                self.log(f"{suffix}/loss_{loss_name}", loss_value, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True) # CHANGED TO LOG ON EPOCH
+                self.log(f"{suffix}/loss_{loss_name}", loss_value, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True) # CHANGED TO LOG ON EPOCH and sync true
             assert 'tot' in loss_values.keys()
             return loss_values['tot']
         elif isinstance(loss_values,list):
