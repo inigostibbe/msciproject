@@ -51,12 +51,15 @@ df["target"] = create_target_labels(df["dataset"])
 
 X, y, pad_mask = awkward_to_inputs_parallel(df, n_processes=8, target_length=10)
 
+event_level = get_event_level(df)
+
 # Now save X,y, pad_mask
 
 path = '/home/pk21271/msciproject/prep_data/ttH_ttSL'
 
-torch.save(X, path, 'X.pt')
-torch.save(y, path, 'y.pt')
-torch.save(pad_mask, path,'pad_mask.pt')
-torch.save(reweighting, path,'reweighting.pt')
-torch.save(weight_nom, path,'weight_nom.pt')
+torch.save(X, os.path.join(path, 'X.pt'))
+torch.save(y, os.path.join(path, 'y.pt'))
+torch.save(pad_mask, os.path.join(path,'pad_mask.pt'))
+torch.save(reweighting, os.path.join(path,'reweighting.pt'))
+torch.save(weight_nom, os.path.join(path,'weight_nom.pt'))
+torch.save(event_level, os.path.join(path,'event_level.pt'))
