@@ -55,7 +55,7 @@ event_level = get_event_level(df)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/msciproject/prep_data/ttH_ttSL'
+path = '/home/pk21271/prep_data/ttH_ttSL'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))
