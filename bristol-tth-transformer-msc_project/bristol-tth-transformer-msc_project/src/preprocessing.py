@@ -80,7 +80,25 @@ def split_dataframe(df: pd.DataFrame, n_chunks: int):
     return chunks
 
 
-def process_chunk(chunk, target_length: int, dtype=np.float32):
+# def process_chunk(chunk, target_length: int, dtype=np.float32):
+#     arrays = []
+#     masks = []
+#     variables = ['pt','eta','phi','mass','area','btagDeepFlavB']
+#     for var in variables:
+#         arr_padded = ak.pad_none(chunk[f"cleanedJet_{var}"], target_length, clip=True)
+#         mask = ~ak.is_none(arr_padded,axis=1)
+#         array = ak.fill_none(arr_padded,0).to_numpy()[...,None]
+#         arrays.append(array)
+#         masks.append(mask)
+
+#     x_chunk = np.concatenate(arrays, axis=-1).astype(dtype) # (chunk, jet, feature)
+#     #x_chunk = np.reshape(x_chunk, (x_chunk.shape[0], target_length, len(variables))) # (chunk, feature, jet)
+#     padding_mask_chunk = np.logical_and.reduce(masks)
+#     y_chunk = chunk['target'].values.astype(dtype)
+
+#     return x_chunk, y_chunk, padding_mask_chunk
+
+def process_chunk(chunk, target_length: int, dtype=np.float32): # New version for multi-class
     arrays = []
     masks = []
     variables = ['pt','eta','phi','mass','area','btagDeepFlavB']
@@ -94,12 +112,28 @@ def process_chunk(chunk, target_length: int, dtype=np.float32):
     x_chunk = np.concatenate(arrays, axis=-1).astype(dtype) # (chunk, jet, feature)
     #x_chunk = np.reshape(x_chunk, (x_chunk.shape[0], target_length, len(variables))) # (chunk, feature, jet)
     padding_mask_chunk = np.logical_and.reduce(masks)
-    y_chunk = chunk['target'].values.astype(dtype)
+    y_chunk = chunk['is_tth', 'is_ttbar', 'is_Zjets'].values.astype(dtype)
 
     return x_chunk, y_chunk, padding_mask_chunk
 
 
-def awkward_to_inputs_parallel(df, target_length=6, n_processes=4):
+# def awkward_to_inputs_parallel(df, target_length=6, n_processes=4):
+#     logging.info(f"Converting awkward arrays to inputs [target_length={target_length}]...")
+
+#     df_split = split_dataframe(df, n_processes)
+
+#     with mp.Pool(processes=n_processes) as pool:
+#         results = pool.starmap(process_chunk, [(chunk, target_length) for chunk in df_split])
+
+#     x_combined = np.concatenate([res[0] for res in results], axis=0)
+#     y_combined = np.concatenate([res[1] for res in results], axis=0)
+#     padding_mask_combined = np.concatenate([res[2] for res in results], axis=0)
+
+#     logging.info(f"Arrays padded and clipped to target length: {target_length}")
+
+#     return torch.from_numpy(x_combined), torch.from_numpy(y_combined).unsqueeze(-1), torch.from_numpy(padding_mask_combined)
+
+def awkward_to_inputs_parallel(df, target_length=6, n_processes=4): # This is the new version for multi-class
     logging.info(f"Converting awkward arrays to inputs [target_length={target_length}]...")
 
     df_split = split_dataframe(df, n_processes)
@@ -113,7 +147,7 @@ def awkward_to_inputs_parallel(df, target_length=6, n_processes=4):
 
     logging.info(f"Arrays padded and clipped to target length: {target_length}")
 
-    return torch.from_numpy(x_combined), torch.from_numpy(y_combined).unsqueeze(-1), torch.from_numpy(padding_mask_combined)
+    return torch.from_numpy(x_combined), torch.from_numpy(y_combined), torch.from_numpy(padding_mask_combined)
 
 
 def awkward_to_inputs(df, target_length=6):
@@ -160,7 +194,33 @@ def remove_negative_events(df, weight_var="weight_nominal") -> pd.DataFrame:
 
     return df
 
-def apply_reweighting_per_class(df, weight_var="weight_nominal") -> pd.DataFrame:
+# def apply_reweighting_per_class(df, weight_var="weight_nominal") -> pd.DataFrame:
+
+#     logging.info(f"Applying reweighting using variable: {weight_var}")
+
+#     # Set up weight_training column
+#     df["weight_training"] = df[weight_var]
+
+#     # Proportions of samples
+#     weightings = df[["target", weight_var]].groupby("target").sum() # This adds the weights for each class, so for binary, 2 sets
+#     counts = df[["target", weight_var]].count() # This counts the number of events in each class
+
+#     # Reweight each process separately
+#     for process in df["target"].unique():
+#         w_factor = float(counts.iloc[0]) / float(weightings.loc[process].iloc[0]) # Does count sum / weight sum 
+#         logging.info(f"Reweighting process '{process}' with factor: {w_factor:.0f}")
+
+#         # Use loc to modify the dataframe in place
+#         df.loc[df["target"] == process, "weight_training"] *= w_factor
+
+#         # Log the sum for validation
+#         sum_nominal = df.loc[df["target"] == process, "weight_nominal"].sum()
+#         sum_training = df.loc[df["target"] == process, "weight_training"].sum()
+#         logging.info(f"Process '{process}' updated. Sum of 'weight_nominal': {sum_nominal:.5f}, Sum of 'weight_training': {sum_training:.0f}")
+
+#     return df
+
+def apply_reweighting_per_class(df, weight_var="weight_nominal") -> pd.DataFrame: #  NEW MULTI-CLASS VERSION
 
     logging.info(f"Applying reweighting using variable: {weight_var}")
 
