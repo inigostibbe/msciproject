@@ -28,10 +28,10 @@ from plotting import plot_roc, plot_confusion_matrix
 ## Specify dataset files to run over ##
 path = "/cephfs/dice/projects/CMS/Hinv/ml_datasets_ul/UL{year}_ml_inputs/{dataset}.parquet"
 
-datasets = [
-    'ttH_HToInvisible_M125',
-    'TTToSemiLeptonic'
-]
+# datasets = [
+#     'ttH_HToInvisible_M125',
+#     'TTToSemiLeptonic'
+# ]
 
 # datasets = [
 #     'ttH_HToInvisible_M125',
@@ -43,6 +43,18 @@ datasets = [
 #     'ZJetsToNuNu_HT-1200To2500',
 #     'ZJetsToNuNu_HT-2500ToInf'
 # ]
+
+datasets = [
+    'ttH_HToInvisible_M125',
+    'TTToSemiLeptonic',
+    'ZJetsToNuNu_HT-100To200',
+    'ZJetsToNuNu_HT-200To400',
+    'ZJetsToNuNu_HT-400To600',
+    'ZJetsToNuNu_HT-600To800',
+    'ZJetsToNuNu_HT-800To1200',
+    'ZJetsToNuNu_HT-1200To2500',
+    'ZJetsToNuNu_HT-2500ToInf'
+]
 
 # datasets = [
 #     'ttH_HToInvisible_M125',
@@ -69,23 +81,30 @@ files = [
 df = load_from_parquet(files)
 df = remove_negative_events(df)
 
-df["target"] = create_target_labels(df["dataset"])# NEED TO CHANGE THIS FOR MULTICLASS
-print(len(df[df['target'] == 0]))
-print(len(df[df['target'] == 1]))
+# df["target"] = create_target_labels(df["dataset"])# NEED TO CHANGE THIS FOR MULTICLASS
+# print(len(df[df['target'] == 0]))
+# print(len(df[df['target'] == 1]))
 
-apply_reweighting_per_class(df)
+df['is_ttH'] = (df["dataset"] == 'ttH_HToInvisible_M125').astype(int)
+df['is_ttbar'] = (df["dataset"] == 'TTToSemiLeptonic').astype(int)
+df['is_Zjets'] = (df["dataset"].str.contains('ZJetsToNuNu')).astype(int)
+print(df['is_ttH'].sum())
+print(df['is_ttbar'].sum())
+print(df['is_Zjets'].sum())
+
+apply_reweighting_per_class_multi(df)
 reweighting = torch.Tensor(df['weight_training'].values)
 weight_nom = torch.Tensor(df['weight_nominal'].values)
 
 # df["target"] = create_target_labels(df["dataset"]) 
 
-X, y, pad_mask = awkward_to_inputs_parallel(df, n_processes=8, target_length=10)    
+X, y, pad_mask = awkward_to_inputs_parallel_multi(df, n_processes=8, target_length=10)    
 
 event_level = get_event_level(df)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/prep_data/ttH_ttbar'
+path = '/home/pk21271/prep_data/ttH_ttbar_Zjets'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))

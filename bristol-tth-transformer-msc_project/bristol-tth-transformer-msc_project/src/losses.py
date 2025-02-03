@@ -71,3 +71,45 @@ class BCEDecorrelatedLoss(nn.Module):
             'disco': disco_loss_value.mean(),
             'tot' : bce_loss_value.mean() + self.lam * disco_loss_value.mean(),
         }
+    
+class CrossEntropyWeightedLoss(nn.Module):  # Without decorrelation
+    def __init__(self, weighted=True):
+
+        super().__init__()
+        self.weighted = weighted
+        # Use reduction='none' so we can apply custom weighting before averaging.
+        self.ce_loss = nn.CrossEntropyLoss(reduction='none')
+
+    def forward(self, outputs, labels, weights=None):
+        """
+        Compute the weighted cross entropy loss.
+        
+        Parameters:
+        ----------- 
+        outputs : torch.Tensor
+            The raw model outputs (logits) of shape [batch_size, num_classes].
+        labels : torch.Tensor
+            The true class labels of shape [batch_size] or [batch_size, 1]. 
+        weights : torch.Tensor or None
+            Optional per-sample weights of shape [batch_size]. If None or if self.weighted
+            is False, all samples are assigned a weight of 1.
+        
+        Returns:
+        --------
+        torch.Tensor
+            The mean weighted cross entropy loss.
+        """
+        # If weighting is disabled or no weights are provided, use ones.
+        if not self.weighted or weights is None:
+            weights = torch.ones((labels.shape[0],), device=outputs.device)
+        
+        # If labels have an extra singleton dimension, squeeze it.
+        if labels.dim() == 2 and labels.shape[1] == 1:
+            labels = labels.squeeze(1)
+        
+        # Compute the per-sample cross entropy loss.
+        loss = self.ce_loss(outputs, labels)  # shape: [batch_size]
+        # Multiply by weights.
+        weighted_loss = loss * weights
+        # Return the average loss over the batch.
+        return weighted_loss.mean()

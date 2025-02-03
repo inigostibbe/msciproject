@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import roc_curve, roc_auc_score, auc, confusion_matrix, ConfusionMatrixDisplay
 from scipy.stats import pearsonr
+import torch
 
 
 def plot_inputs_per_multiplicity(inputs, labels, mask, bins, weights=None, log=False, outdir=None,show=False):
@@ -38,7 +39,7 @@ def plot_inputs_per_multiplicity(inputs, labels, mask, bins, weights=None, log=F
         plt.show()
     return fig
 
-def plot_inputs_per_label(inputs, labels, mask, bins, weights=None, log=False, outdir=None,show=False):
+def plot_inputs_per_label(inputs, labels, mask, bins, weights=None, log=False, outdir=None,show=False, density=False):
     n_parts = inputs.size(1)
     n_vars = inputs.size(2)
 
@@ -58,6 +59,7 @@ def plot_inputs_per_label(inputs, labels, mask, bins, weights=None, log=False, o
             color = 'r',
             label = 'Background',
             weights = weights[mask_bkg,:][mask[mask_bkg]] if weights is not None else None,
+            density = density
         )
         axs[i].hist(
             inputs[mask_sig,:,i][mask[mask_sig]],
@@ -66,6 +68,7 @@ def plot_inputs_per_label(inputs, labels, mask, bins, weights=None, log=False, o
             color = 'g',
             label = 'Signal',
             weights = weights[mask_sig,:][mask[mask_sig]] if weights is not None else None,
+            density = density,
         )
         axs[i].set_xlabel(f'var {i}')
         if log:
@@ -76,6 +79,58 @@ def plot_inputs_per_label(inputs, labels, mask, bins, weights=None, log=False, o
     if show:
         plt.show()
     return fig
+
+def plot_inputs_per_label_multi(inputs, labels, mask, bins, weights=None, log=False, outdir=None, show=False, density=False):
+    batch_size, n_parts, n_vars = inputs.shape  # Extract shape: (batch, 10, 6)
+
+    if weights is not None:
+        weights = weights.unsqueeze(-1).expand(-1, n_parts)  # Expand weights to match particles
+
+    fig, axs = plt.subplots(ncols=n_vars, figsize=(4 * n_vars, 3))
+    plt.subplots_adjust(left=0.1, right=0.9, wspace=0.5)
+
+    # Convert one-hot labels to class indices (0, 1, 2)
+    labels = torch.argmax(labels, dim=1)  # Shape: [batch_size]
+
+    # Define class names and colors
+    class_labels = {
+        0: ("ttH", "r"),    # Red for ttH
+        1: ("ttbar", "b"),  # Blue for ttbar
+        2: ("Zjets", "g")   # Green for Zjets
+    }
+
+    for i in range(n_vars):  # Iterate over features (6 total)
+        bins_var = np.linspace(inputs[..., i].min().item(), inputs[..., i].max().item(), bins)
+
+        for class_idx, (class_name, color) in class_labels.items():
+            mask_class = (labels == class_idx)[:, None].expand(-1, n_parts)  # Shape: [batch_size, 10]
+            valid_mask = mask_class & mask  # Ensure mask aligns with inputs
+
+            # Apply the corrected mask along the right dimension
+            selected_inputs = inputs[:, :, i][valid_mask]  # Masked selection
+
+            axs[i].hist(
+                selected_inputs,  # Now applying mask along particles, keeping features correct
+                bins=bins_var,
+                histtype="step",
+                color=color,
+                label=class_name,
+                weights=weights[valid_mask] if weights is not None else None,
+                density=density,
+            )
+
+        axs[i].set_xlabel(f'Feature {i}')
+        if log:
+            axs[i].set_yscale('log')
+        axs[i].legend()
+
+    if outdir is not None:
+        plt.savefig(f"{outdir}/inputs_per_class.png", dpi=300)
+    if show:
+        plt.show()
+
+    return fig
+
 
 def weighted_roc_curve(y_true, y_scores, sample_weights=None):
     # If no sample weights are provided, set them to 1
