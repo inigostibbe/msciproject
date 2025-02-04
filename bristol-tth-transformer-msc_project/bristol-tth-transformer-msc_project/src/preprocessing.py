@@ -112,7 +112,7 @@ def process_chunk_multi(chunk, target_length: int, dtype=np.float32): # New vers
     x_chunk = np.concatenate(arrays, axis=-1).astype(dtype) # (chunk, jet, feature)
     #x_chunk = np.reshape(x_chunk, (x_chunk.shape[0], target_length, len(variables))) # (chunk, feature, jet)
     padding_mask_chunk = np.logical_and.reduce(masks)
-    y_chunk = chunk[['is_ttH', 'is_ttbar', 'is_Zjets']].values.astype(dtype)
+    y_chunk = chunk[['class']].values.astype(dtype)
 
     return x_chunk, y_chunk, padding_mask_chunk
 
@@ -270,31 +270,24 @@ def apply_reweighting_per_class_multi(df, weight_var="weight_nominal") -> pd.Dat
     # Set up weight_training column
     df["weight_training"] = df[weight_var]
     
-    # Compute total weight per process
-    weightings = pd.Series({
-        "is_ttH": df.loc[df["is_ttH"] == 1, weight_var].sum(),
-        "is_ttbar": df.loc[df["is_ttbar"] == 1, weight_var].sum(),
-        "is_Zjets": df.loc[df["is_Zjets"] == 1, weight_var].sum()
-    })
-    
-    # Get the event counts (one-hot encoded, so just sum the columns)
-    counts = df[["is_ttH", "is_ttbar", "is_Zjets"]].sum()
-    
-    # Choose a fixed reference count, for example the count for 'is_ttH'
-    reference_count = counts["is_ttH"]
-    
-    for process in ["is_ttH", "is_ttbar", "is_Zjets"]:
-        # Use the fixed reference for all processes
-        w_factor = float(reference_count) / float(weightings[process])
-        logging.info(f"Reweighting process '{process}' with factor: {w_factor:.4f}")
-    
-        # Apply the weight factor where the one-hot column is 1
-        df.loc[df[process] == 1, "weight_training"] *= w_factor
-    
-        # Log the sum for validation
-        sum_nominal = df.loc[df[process] == 1, "weight_nominal"].sum()
-        sum_training = df.loc[df[process] == 1, "weight_training"].sum()
-        logging.info(f"Process '{process}' updated. Sum of 'weight_nominal': {sum_nominal:.5f}, Sum of 'weight_training': {sum_training:.0f}")
+    weightings = df.groupby("class")[weight_var].sum()
+    counts = df.groupby("class").size()
+    reference_class = weightings.index[0] 
+    reference_count = counts.loc[reference_class]
+    logging.info(f"Reference class is {reference_class} with count {reference_count}")
+
+    # Reweight each class based on the reference count
+    for cl in weightings.index:
+        w_factor = float(reference_count) / float(weightings.loc[cl])
+        logging.info(f"Reweighting class '{cl}' with factor: {w_factor:.4f}")
+        
+        # Apply the factor to all samples belonging to the current class
+        df.loc[df["class"] == cl, "weight_training"] *= w_factor
+        
+        # Log the sums for validation
+        sum_nominal = df.loc[df["class"] == cl, weight_var].sum()
+        sum_training = df.loc[df["class"] == cl, "weight_training"].sum()
+        logging.info(f"Class '{cl}' updated. Sum of '{weight_var}': {sum_nominal:.5f}, Sum of 'weight_training': {sum_training:.0f}")
     
     return df
 

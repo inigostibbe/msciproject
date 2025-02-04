@@ -85,12 +85,15 @@ df = remove_negative_events(df)
 # print(len(df[df['target'] == 0]))
 # print(len(df[df['target'] == 1]))
 
-df['is_ttH'] = (df["dataset"] == 'ttH_HToInvisible_M125').astype(int)
-df['is_ttbar'] = (df["dataset"] == 'TTToSemiLeptonic').astype(int)
-df['is_Zjets'] = (df["dataset"].str.contains('ZJetsToNuNu')).astype(int)
-print(df['is_ttH'].sum())
-print(df['is_ttbar'].sum())
-print(df['is_Zjets'].sum())
+# Create a new column 'class' with a default value (optional)
+df['class'] = -1  
+
+# Assign class labels based on conditions, can add in more datasets
+df.loc[df["dataset"] == 'ttH_HToInvisible_M125', "class"] = 0
+df.loc[df["dataset"] == 'TTToSemiLeptonic', "class"] = 1
+df.loc[df["dataset"].str.contains("ZJetsToNuNu"), "class"] = 2
+# add dataset here
+
 
 apply_reweighting_per_class_multi(df)
 reweighting = torch.Tensor(df['weight_training'].values)

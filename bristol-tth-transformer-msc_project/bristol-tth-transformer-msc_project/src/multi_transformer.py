@@ -103,7 +103,7 @@ class AttBlock(nn.Module):
         return x
 
 class AnalysisObjectTransformer(L.LightningModule):
-    def __init__(self, embedding=None, embed_dim=64, output_dim=3, expansion_factor=2, encoder_layers=3, class_layers=3, dnn_layers=3, num_heads=8, hidden_activation=nn.GELU, output_activation=nn.Sigmoid, dropout=0, loss_function=None):
+    def __init__(self, embedding=None, embed_dim=64, output_dim=1, expansion_factor=2, encoder_layers=3, class_layers=3, dnn_layers=3, num_heads=8, hidden_activation=nn.GELU, output_activation=nn.Sigmoid, dropout=0, loss_function=None):
         super().__init__()
 
         # Embedding layer (assumed to be external)

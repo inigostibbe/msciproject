@@ -79,38 +79,82 @@ def plot_inputs_per_label(inputs, labels, mask, bins, weights=None, log=False, o
     if show:
         plt.show()
     return fig
+def plot_inputs_per_label_multi(inputs, labels, mask, bins, weights=None, log=False, outdir=None, show=False, density=False, class_labels=None):
+    """
+    Plots histograms for each feature (n_vars) split by class labels.
+    Assumes labels are already class-coded (e.g. 0, 1, 2, ...).
 
-def plot_inputs_per_label_multi(inputs, labels, mask, bins, weights=None, log=False, outdir=None, show=False, density=False):
-    batch_size, n_parts, n_vars = inputs.shape  # Extract shape: (batch, 10, 6)
+    Parameters:
+    -----------
+    inputs : torch.Tensor
+        Tensor of shape [batch_size, n_parts, n_vars].
+    labels : torch.Tensor
+        Tensor containing class labels (integers). Expected shape is [batch_size].
+    mask : torch.Tensor
+        Boolean tensor of shape [batch_size, n_parts] to select valid particles.
+    bins : int
+        Number of bins for the histograms.
+    weights : torch.Tensor, optional
+        Optional per-event weights of shape [batch_size] that will be expanded to [batch_size, n_parts].
+    log : bool, optional
+        Whether to use a log scale for the y-axis.
+    outdir : str, optional
+        If provided, the figure will be saved to this directory.
+    show : bool, optional
+        Whether to display the plot.
+    density : bool, optional
+        If True, the histogram is normalized to form a probability density.
+    class_labels : dict, optional
+        Dictionary mapping class indices to a tuple (class_name, color).
+        If None, the function auto-generates labels and colors for the unique classes.
 
+    Returns:
+    --------
+    matplotlib.figure.Figure
+        The created figure.
+    """
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import torch
+
+    batch_size, n_parts, n_vars = inputs.shape  # e.g. (batch_size, n_parts, n_vars)
+
+    # Ensure labels is one-dimensional.
+    if labels.dim() > 1:
+        labels = labels.squeeze()
+    
     if weights is not None:
-        weights = weights.unsqueeze(-1).expand(-1, n_parts)  # Expand weights to match particles
+        # If weights are provided per event, expand them to match the particle dimension.
+        weights = weights.unsqueeze(-1).expand(-1, n_parts)
 
     fig, axs = plt.subplots(ncols=n_vars, figsize=(4 * n_vars, 3))
     plt.subplots_adjust(left=0.1, right=0.9, wspace=0.5)
 
-    # Convert one-hot labels to class indices (0, 1, 2)
-    labels = torch.argmax(labels, dim=1)  # Shape: [batch_size]
+    # If class_labels is not provided, build it automatically using unique classes.
+    if class_labels is None:
+        unique_classes = torch.unique(labels).cpu().numpy()
+        unique_classes = sorted(unique_classes.tolist())
+        cmap = plt.get_cmap('tab10')
+        class_labels = {cl: (f"Class {cl}", cmap(i % 10)) for i, cl in enumerate(unique_classes)}
 
-    # Define class names and colors
-    class_labels = {
-        0: ("ttH", "r"),    # Red for ttH
-        1: ("ttbar", "b"),  # Blue for ttbar
-        2: ("Zjets", "g")   # Green for Zjets
-    }
-
-    for i in range(n_vars):  # Iterate over features (6 total)
+    # Iterate over each feature
+    for i in range(n_vars):
+        # Create bins based on the minimum and maximum of the i-th feature.
         bins_var = np.linspace(inputs[..., i].min().item(), inputs[..., i].max().item(), bins)
 
+        # Plot each class using the provided or auto-generated labels and colors.
         for class_idx, (class_name, color) in class_labels.items():
-            mask_class = (labels == class_idx)[:, None].expand(-1, n_parts)  # Shape: [batch_size, 10]
-            valid_mask = mask_class & mask  # Ensure mask aligns with inputs
+            # Create a mask for events belonging to the current class.
+            # (labels == class_idx) now has shape [batch_size]
+            # We add a dimension so it becomes [batch_size, 1] and then expand it to [batch_size, n_parts].
+            mask_class = (labels == class_idx).unsqueeze(1).expand(-1, n_parts)
+            valid_mask = mask_class & mask  # Combine with the provided mask
 
-            # Apply the corrected mask along the right dimension
-            selected_inputs = inputs[:, :, i][valid_mask]  # Masked selection
+            # Apply the mask to select the inputs for feature i.
+            selected_inputs = inputs[:, :, i][valid_mask]
 
             axs[i].hist(
-                selected_inputs,  # Now applying mask along particles, keeping features correct
+                selected_inputs,
                 bins=bins_var,
                 histtype="step",
                 color=color,
@@ -130,6 +174,7 @@ def plot_inputs_per_label_multi(inputs, labels, mask, bins, weights=None, log=Fa
         plt.show()
 
     return fig
+
 
 
 def weighted_roc_curve(y_true, y_scores, sample_weights=None):
