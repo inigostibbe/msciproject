@@ -53,7 +53,15 @@ datasets = [
     'ZJetsToNuNu_HT-600To800',
     'ZJetsToNuNu_HT-800To1200',
     'ZJetsToNuNu_HT-1200To2500',
-    'ZJetsToNuNu_HT-2500ToInf'
+    'ZJetsToNuNu_HT-2500ToInf',
+    'WJetsToLNu_HT-70To100', 
+    'WJetsToLNu_HT-100To200',
+    'WJetsToLNu_HT-200To400',
+    'WJetsToLNu_HT-400To600',
+    'WJetsToLNu_HT-600To800',
+    'WJetsToLNu_HT-800To1200',
+    'WJetsToLNu_HT-1200To2500',
+    'WJetsToLNu_HT-2500ToInf'
 ]
 
 # datasets = [
@@ -67,7 +75,6 @@ datasets = [
 #     'WJetsToLNu_HT-1200To2500',
 #     'WJetsToLNu_HT-2500ToInf'
 # ]
-
 
 years = ['2018']
 
@@ -92,6 +99,8 @@ df['class'] = -1
 df.loc[df["dataset"] == 'ttH_HToInvisible_M125', "class"] = 0
 df.loc[df["dataset"] == 'TTToSemiLeptonic', "class"] = 1
 df.loc[df["dataset"].str.contains("ZJetsToNuNu"), "class"] = 2
+df.loc[df["dataset"].str.contains("WJetsToLNu"), "class"] = 3
+
 # add dataset here
 
 
@@ -107,7 +116,7 @@ event_level = get_event_level(df)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/prep_data/ttH_ttbar_Zjets'
+path = '/home/pk21271/prep_data/ttH_ttbar_Zjets_Wjets'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))

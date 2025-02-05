@@ -78,7 +78,8 @@ class CrossEntropyWeightedLoss(nn.Module):  # Without decorrelation
         super().__init__()
         self.weighted = weighted
         # Use reduction='none' so we can apply custom weighting before averaging.
-        self.ce_loss = nn.CrossEntropyLoss(reduction='none')
+        self.ce_loss = nn.CrossEntropyLoss(reduction='none', weight=torch.tensor([1.1, 1.0, 1.0, 1.0])) # For weighting classes
+        # self.ce_loss = nn.CrossEntropyLoss(reduction='none')
 
     def forward(self, outputs, labels, event, weights=None): # We include the 'event' but this is used for decorrealted loss so we dont use it 
 
@@ -93,9 +94,11 @@ class CrossEntropyWeightedLoss(nn.Module):  # Without decorrelation
             labels = labels.squeeze(1)
         
         # Compute the per-sample cross entropy loss.
-        loss = self.ce_loss(outputs, labels)  # shape: [batch_size]
+        loss = self.ce_loss(outputs, labels)
+
         # Multiply by weights.
         weighted_loss = loss * weights
+
         # Return the average loss over the batch.
         return weighted_loss.mean()
     
