@@ -99,6 +99,38 @@ class CrossEntropyWeightedLoss(nn.Module):  # Without decorrelation
         # Return the average loss over the batch.
         return weighted_loss.mean()
     
-class FocalLoss(nn.Moduel):
-    def __init__(self, alpha=1, gamma=2, reduction='mean'):
+class CrossEntropyWeightedLoss_selective(nn.Module):  # Selective losses eg taking top 10% of loss values
+    def __init__(self, weighted=True):
+
+        super().__init__()
+        self.weighted = weighted
+        # Use reduction='none' so we can apply custom weighting before averaging.
+        self.ce_loss = nn.CrossEntropyLoss(reduction='none')
+
+    def forward(self, outputs, labels, event, weights=None): # We include the 'event' but this is used for decorrealted loss so we dont use it 
+
+        labels = labels.to(torch.long)
+
+        # If weighting is disabled or no weights are provided, use ones.
+        if not self.weighted or weights is None:
+            weights = torch.ones((labels.shape[0],), device=outputs.device)
+        
+        # If labels have an extra singleton dimension, squeeze it.
+        if labels.dim() == 2 and labels.shape[1] == 1:
+            labels = labels.squeeze(1)
+        
+        # Compute the per-sample cross entropy loss.
+        loss = self.ce_loss(outputs, labels)  # shape: [batch_size]
+        # Multiply by weights.
+        weighted_loss = loss * weights
+
+        # Select top 10% of loss values
+        k = int(len(weighted_loss) * 0.25)  # Select top 10% of loss values
+        topk_loss, _ = torch.topk(weighted_loss, k) # Select top k loss values
+
+        # Return the average loss over the batch.
+        return topk_loss.mean()
+    
+# class FocalLoss(nn.Moduel):
+#     def __init__(self, alpha=1, gamma=2, reduction='mean'):
 

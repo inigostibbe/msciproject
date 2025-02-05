@@ -78,7 +78,7 @@ files = [
 ]
 
 ## Data preprocessing ##
-df = load_from_parquet(files)
+df = load_from_parquet(files, regions = [0,6]) # Including region 
 df = remove_negative_events(df)
 
 # df["target"] = create_target_labels(df["dataset"])# NEED TO CHANGE THIS FOR MULTICLASS

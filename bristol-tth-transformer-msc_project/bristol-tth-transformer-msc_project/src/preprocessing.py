@@ -218,51 +218,7 @@ def apply_reweighting_per_class(df, weight_var="weight_nominal") -> pd.DataFrame
         sum_training = df.loc[df["target"] == process, "weight_training"].sum()
         logging.info(f"Process '{process}' updated. Sum of 'weight_nominal': {sum_nominal:.5f}, Sum of 'weight_training': {sum_training:.0f}")
 
-#     return df
-
-# def apply_reweighting_per_class_multi(df, weight_var="weight_nominal") -> pd.DataFrame: #  NEW MULTI-CLASS VERSION
-
-#     logging.info(f"Applying reweighting using variable: {weight_var}")
-
-#     # Set up weight_training column
-#     df["weight_training"] = df[weight_var]
-
-#     # Proportions of samples
-#     # weightings = df[["target", weight_var]].groupby("target").sum() # This adds the weights for each class, so for binary, 2 sets
-#     # counts = df[["target", weight_var]].count() # This counts the number of events in each class=
-
-#     # Summing weights for each class
-#     weightings = df.groupby(["is_ttH", "is_ttbar", "is_Zjets"])[weight_var].sum()
-
-#     # Sum of weights for each class (returns a DataFrame)
-#     weightings = pd.Series({
-#         "is_ttH": df.loc[df["is_ttH"] == 1, weight_var].sum(),
-#         "is_ttbar": df.loc[df["is_ttbar"] == 1, weight_var].sum(),
-#         "is_Zjets": df.loc[df["is_Zjets"] == 1, weight_var].sum()
-#     })
-
-#     counts = df[["is_ttH", "is_ttbar", "is_Zjets"]].sum()
-
-#     print(weightings)
-#     print(type(weightings))
-#     print(counts)
-#     print(type(counts))
-
-#     # Reweight each process separately
-#     for process in ["is_ttH", "is_ttbar", "is_Zjets"]:
-#         # Compute the reweighting factor: count sum / weight sum
-#         w_factor = float(counts[process]) / float(weightings[process])
-#         logging.info(f"Reweighting process '{process}' with factor: {w_factor:.4f}")
-
-#         # Apply the weight factor where the one-hot column is 1
-#         df.loc[df[process] == 1, "weight_training"] *= w_factor
-
-#         # Log the sum for validation
-#         sum_nominal = df.loc[df[process] == 1, "weight_nominal"].sum()
-#         sum_training = df.loc[df[process] == 1, "weight_training"].sum()
-#         logging.info(f"Process '{process}' updated. Sum of 'weight_nominal': {sum_nominal:.5f}, Sum of 'weight_training': {sum_training:.0f}")
-
-#     return df
+    return df
 
 def apply_reweighting_per_class_multi(df, weight_var="weight_nominal") -> pd.DataFrame:
     logging.info(f"Applying reweighting using variable: {weight_var}")
@@ -288,6 +244,31 @@ def apply_reweighting_per_class_multi(df, weight_var="weight_nominal") -> pd.Dat
         sum_nominal = df.loc[df["class"] == cl, weight_var].sum()
         sum_training = df.loc[df["class"] == cl, "weight_training"].sum()
         logging.info(f"Class '{cl}' updated. Sum of '{weight_var}': {sum_nominal:.5f}, Sum of 'weight_training': {sum_training:.0f}")
+    
+    return df
+
+def apply_reweighting_per_class_multi_2(df, weight_var="weight_nominal") -> pd.DataFrame: # Second version by using the total weight/ class weight formula
+    logging.info(f"Applying reweighting using variable: {weight_var}")
+    
+    # Set up weight_training column
+    df["weight_training"] = df[weight_var]
+    
+    weightings_per_class = df.groupby("class")[weight_var].sum()
+    total_weight = df[weight_var].sum()
+    logging.info(f"Total weight {total_weight}")
+
+    # Reweight each class based on the reference count
+    for cl in weightings_per_class.index:
+        w_factor = float(total_weight) / float(weightings_per_class.loc[cl] * len(weightings_per_class)) # This it total/ class weight * number of classes (inverse frequency model)
+        logging.info(f"Reweighting class '{cl}' with factor: {w_factor:.4f}")
+        
+        # Apply the factor to all samples belonging to the current class
+        df.loc[df["class"] == cl, "weight_training"] *= w_factor
+        
+        # Log the sums for validation
+        sum_nominal = df.loc[df["class"] == cl, weight_var].sum()
+        sum_training = df.loc[df["class"] == cl, "weight_training"].sum()
+        logging.info(f"Class '{cl}' updated. Sum of '{weight_var}': {sum_nominal:.5f}, Sum of 'weight_training': {sum_training:.5f}")
     
     return df
 
