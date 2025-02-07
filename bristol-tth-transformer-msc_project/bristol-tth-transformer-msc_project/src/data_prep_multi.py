@@ -45,7 +45,7 @@ path = "/cephfs/dice/projects/CMS/Hinv/ml_datasets_ul/UL{year}_ml_inputs/{datase
 # ]
 
 datasets = [
-    'ttH_HToInvisible_M125',
+    'ttH_HToInvisible_M125', # combine semi leptonic and di leptonic ttbar
     'TTToSemiLeptonic',
     'ZJetsToNuNu_HT-100To200',
     'ZJetsToNuNu_HT-200To400',

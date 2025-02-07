@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import lightning as L
 
 
-class Embedding(nn.Module):
+class Embedding_old(nn.Module): # Old version 
     def __init__(self, input_dim, embed_dims, normalize_input=True, activation=nn.GELU):
         # input_dim = train_X.shape[-1],   # Which is 6 as shape = (batch, 10, 6)
         # embed_dims = [64], 
@@ -39,6 +39,82 @@ class Embedding(nn.Module):
             x = self.input_bn(x.permute(0,2,1).contiguous()).permute(0,2,1).contiguous()
 
         return self.layers(x)
+
+class Embedding(nn.Module):
+    def __init__(
+        self,
+        input_dim: int,
+        embed_dims,
+        normalize_input: bool = True,
+        norm_type: str = 'layer',  # Options: 'batch' or 'layer'
+        activation=nn.GELU,
+        dropout: float = 0.0
+    ):
+        """
+        Args:
+            input_dim (int): Dimensionality of input features.
+            embed_dims (int or list/tuple of int): A single integer or a list specifying the dimensions of
+                subsequent Linear layers. For example, 64 or [64, 128].
+            normalize_input (bool): Whether to normalize the input.
+            norm_type (str): Which normalization to use ('batch' for BatchNorm1d or 'layer' for LayerNorm).
+            activation (callable): Activation function (class) to use.
+            dropout (float): Dropout probability to apply after each activation (default is 0, i.e. no dropout).
+        """
+        super().__init__()
+        if not isinstance(embed_dims, (tuple, list)):
+            embed_dims = [embed_dims]
+        assert len(embed_dims) >= 1, "embed_dims must contain at least one element"
+
+        # Choose normalization
+        if normalize_input:
+            if norm_type.lower() == 'batch':
+                # BatchNorm1d expects input of shape (batch, features, seq_len)
+                self.input_norm = nn.BatchNorm1d(input_dim)
+                self.use_batch_norm = True
+            elif norm_type.lower() == 'layer':
+                # LayerNorm normalizes over the last dimension (features)
+                self.input_norm = nn.LayerNorm(input_dim)
+                self.use_batch_norm = False
+            else:
+                raise ValueError("norm_type must be either 'batch' or 'layer'")
+        else:
+            self.input_norm = None
+
+        # Build the embedding layers
+        layers = []
+        # First layer from input_dim -> embed_dims[0]
+        layers.append(nn.Linear(input_dim, embed_dims[0]))
+        layers.append(activation())
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+        # Additional layers if embed_dims has more than one element
+        for in_dim, out_dim in zip(embed_dims[:-1], embed_dims[1:]):
+            layers.append(nn.Linear(in_dim, out_dim))
+            layers.append(activation())
+            if dropout > 0:
+                layers.append(nn.Dropout(dropout))
+
+        self.layers = nn.Sequential(*layers)
+        self.dim = embed_dims[-1]
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch, seq_len, input_dim)
+        Returns:
+            torch.Tensor: Output tensor of shape (batch, seq_len, embed_dim)
+        """
+        if self.input_norm is not None:
+            if hasattr(self, 'use_batch_norm') and self.use_batch_norm:
+                # For BatchNorm1d, transpose to (batch, features, seq_len), normalize, then transpose back.
+                x = x.transpose(1, 2)  # (batch, input_dim, seq_len)
+                x = self.input_norm(x)
+                x = x.transpose(1, 2)  # (batch, seq_len, input_dim)
+            else:
+                # LayerNorm works on the last dimension directly.
+                x = self.input_norm(x)
+        return self.layers(x)
+
 
 class AttBlock(nn.Module):
     def __init__(self, embed_dim, expansion_factor=2, num_heads=8, activation=nn.GELU, dropout=0):

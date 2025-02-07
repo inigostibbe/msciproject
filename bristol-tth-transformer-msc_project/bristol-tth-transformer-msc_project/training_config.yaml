@@ -89,7 +89,7 @@ datasets:
   # - QCD_HT1500to2000
   # - QCD_HT2000toInf
 
-  - ST_s-channel_4f_hadronicDecays
+  - ST_s-channel_4f_hadronicDecays # Singal top ttX 
   - ST_s-channel_4f_leptonDecays
   - ST_t-channel_antitop_4f_InclusiveDecays
   - ST_t-channel_top_4f_InclusiveDecays
