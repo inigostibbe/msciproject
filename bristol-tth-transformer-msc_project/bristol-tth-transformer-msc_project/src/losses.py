@@ -73,12 +73,12 @@ class BCEDecorrelatedLoss(nn.Module):
         }
     
 class CrossEntropyWeightedLoss(nn.Module):  # Without decorrelation
-    def __init__(self, weighted=True):
+    def __init__(self, weighted=True , weights = [1,1,1,1,1]):
 
         super().__init__()
         self.weighted = weighted
         # Use reduction='none' so we can apply custom weighting before averaging.
-        self.ce_loss = nn.CrossEntropyLoss(reduction='none', weight=torch.tensor([1.1, 1.0, 1.0, 1.0])) # For weighting classes
+        self.ce_loss = nn.CrossEntropyLoss(reduction='none', weight=torch.tensor(weights)) # For weighting classes (needs to match no. classes)
         # self.ce_loss = nn.CrossEntropyLoss(reduction='none')
 
     def forward(self, outputs, labels, event, weights=None): # We include the 'event' but this is used for decorrealted loss so we dont use it 

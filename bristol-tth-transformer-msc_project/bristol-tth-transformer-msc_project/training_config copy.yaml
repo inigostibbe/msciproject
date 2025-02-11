@@ -89,18 +89,18 @@ datasets:
   # - QCD_HT1500to2000
   # - QCD_HT2000toInf
 
-  # - ST_s-channel_4f_hadronicDecays
+  # - ST_s-channel_4f_hadronicDecays # single top tX
   # - ST_s-channel_4f_leptonDecays
   # - ST_t-channel_antitop_4f_InclusiveDecays
   # - ST_t-channel_top_4f_InclusiveDecays
   # - ST_tW_antitop_5f_inclusiveDecays
   # - ST_tW_top_5f_inclusiveDecays
 
-  # - TTTo2L2Nu # to two leptons
+  # - TTTo2L2Nu # to two leptons include
   # - TTToHadronic
   - TTToSemiLeptonic
 
-  # - TTGJets
+  # - TTGJets # This looks like signal so will be difficult 
   # - TTWJetsToLNu
   # - TTWJetsToQQ
   # - TTZToLLNuNu_M-10

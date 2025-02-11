@@ -28,25 +28,32 @@ from plotting import plot_roc, plot_confusion_matrix
 ## Specify dataset files to run over ##
 path = "/cephfs/dice/projects/CMS/Hinv/ml_datasets_ul/UL{year}_ml_inputs/{dataset}.parquet"
 
-# datasets = [
-#     'ttH_HToInvisible_M125',
-#     'TTToSemiLeptonic'
-# ]
-
-# datasets = [
-#     'ttH_HToInvisible_M125',
-#     'ZJetsToNuNu_HT-100To200',
-#     'ZJetsToNuNu_HT-200To400',
-#     'ZJetsToNuNu_HT-400To600',
-#     'ZJetsToNuNu_HT-600To800',
-#     'ZJetsToNuNu_HT-800To1200',
-#     'ZJetsToNuNu_HT-1200To2500',
-#     'ZJetsToNuNu_HT-2500ToInf'
-# ]
-
 datasets = [
-    'ttH_HToInvisible_M125', # combine semi leptonic and di leptonic ttbar
+    # Signal 0
+    'ttH_HToInvisible_M125', 
+
+    # ttbar processes 1
     'TTToSemiLeptonic',
+    'TTTo2L2Nu',
+
+    # Single top (tX) processes 1
+    'ST_s-channel_4f_hadronicDecays',
+    'ST_s-channel_4f_leptonDecays',
+    'ST_t-channel_antitop_4f_InclusiveDecays',
+    'ST_t-channel_top_4f_InclusiveDecays',
+    'ST_tW_antitop_5f_inclusiveDecays',
+    'ST_tW_top_5f_inclusiveDecays',
+
+    # Multiboson (diboson and triboson) processes 5
+    # 'WW',
+    # 'WZ',
+    # 'ZZ',
+    # 'WWW_4F',
+    # 'WWZ_4F',
+    # 'WZZ',
+    # 'ZZZ',
+
+    # Z+jets processes 2
     'ZJetsToNuNu_HT-100To200',
     'ZJetsToNuNu_HT-200To400',
     'ZJetsToNuNu_HT-400To600',
@@ -54,7 +61,9 @@ datasets = [
     'ZJetsToNuNu_HT-800To1200',
     'ZJetsToNuNu_HT-1200To2500',
     'ZJetsToNuNu_HT-2500ToInf',
-    'WJetsToLNu_HT-70To100', 
+
+    # W+jets processes 3
+    'WJetsToLNu_HT-70To100',
     'WJetsToLNu_HT-100To200',
     'WJetsToLNu_HT-200To400',
     'WJetsToLNu_HT-400To600',
@@ -63,18 +72,6 @@ datasets = [
     'WJetsToLNu_HT-1200To2500',
     'WJetsToLNu_HT-2500ToInf'
 ]
-
-# datasets = [
-#     'ttH_HToInvisible_M125',
-#     'WJetsToLNu_HT-70To100', 
-#     'WJetsToLNu_HT-100To200',
-#     'WJetsToLNu_HT-200To400',
-#     'WJetsToLNu_HT-400To600',
-#     'WJetsToLNu_HT-600To800',
-#     'WJetsToLNu_HT-800To1200',
-#     'WJetsToLNu_HT-1200To2500',
-#     'WJetsToLNu_HT-2500ToInf'
-# ]
 
 years = ['2018']
 
@@ -92,16 +89,50 @@ df = remove_negative_events(df)
 # print(len(df[df['target'] == 0]))
 # print(len(df[df['target'] == 1]))
 
-# Create a new column 'class' with a default value (optional)
-df['class'] = -1  
+# ...existing code...
 
-# Assign class labels based on conditions, can add in more datasets
-df.loc[df["dataset"] == 'ttH_HToInvisible_M125', "class"] = 0
-df.loc[df["dataset"] == 'TTToSemiLeptonic', "class"] = 1
-df.loc[df["dataset"].str.contains("ZJetsToNuNu"), "class"] = 2
-df.loc[df["dataset"].str.contains("WJetsToLNu"), "class"] = 3
+# Define class mappings
+class_mappings = {
+    'ttH_HToInvisible_M125': 0,  # Signal
+    'TTTo': 1,                   # ttbar
+    'ST_': 1,                    # Single top (same class as ttbar)
+    'ZJetsToNuNu': 2,           # Z+jets
+    'WJetsToLNu': 3,            # W+jets
+    'WW': 4,                     # Multiboson
+    'WZ': 4,
+    'ZZ': 4,
+    'WWW': 4,
+    'WWZ': 4,
+    'WZZ': 4,
+    'ZZZ': 4
+}
 
-# add dataset here
+# Initialize class column
+df['class'] = -1
+
+# Assign classes based on dataset patterns
+for pattern, class_label in class_mappings.items():
+    df.loc[df["dataset"].str.contains(pattern), "class"] = class_label
+
+# Verify all datasets are assigned
+unassigned = df[df['class'] == -1]
+if len(unassigned) > 0:
+    print("Warning: Some datasets not assigned a class:")
+    print(unassigned['dataset'].unique())
+
+# Print class distribution
+print("\nClass distribution:")
+print(df.groupby('class')['dataset'].nunique())
+print("\nSamples per class:")
+print(df['class'].value_counts())
+
+# ...existing code...
+
+# # Assign class labels based on conditions, can add in more datasets
+# df.loc[df["dataset"] == 'ttH_HToInvisible_M125', "class"] = 0
+# df.loc[df["dataset"] == 'TTToSemiLeptonic', "class"] = 1
+# df.loc[df["dataset"].str.contains("ZJetsToNuNu"), "class"] = 2
+# df.loc[df["dataset"].str.contains("WJetsToLNu"), "class"] = 3
 
 
 apply_reweighting_per_class_multi(df)
@@ -116,7 +147,7 @@ event_level = get_event_level(df)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/prep_data/ttH_ttbar_Zjets_Wjets'
+path = '/home/pk21271/prep_data/classes_4'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))
