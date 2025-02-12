@@ -137,12 +137,19 @@ class CrossEntropyWeightedLoss_selective(nn.Module):  # Selective losses eg taki
         return topk_loss.mean()
 
 class FocalLoss(nn.Module):
-    def __init__(self, gamma=0, weighted=False):
+    def __init__(self, gamma=0, alpha=None, weighted=False):
         super().__init__()
 
         self.weighted = weighted
         self.gamma = gamma
-        self.ce_loss = nn.CrossEntropyLoss(reduction='none')
+        
+        # Handle class-specific alpha weights
+        if alpha is None:
+            self.alpha = None
+        else:
+            # Convert alpha list to tensor and ensure it sums to 1
+            self.alpha = torch.tensor(alpha)
+            self.alpha = self.alpha / self.alpha.sum()
 
     def forward(self, outputs, labels, event, weights):
 
@@ -150,7 +157,7 @@ class FocalLoss(nn.Module):
         # If labels have an extra singleton dimension, squeeze it.
         if labels.dim() == 2 and labels.shape[1] == 1:
             labels = labels.squeeze(1)
-            
+
         # Use log_softmax for numerical stability
         log_softmax = F.log_softmax(outputs, dim=-1)
         log_pt = torch.gather(log_softmax, dim=1, index=labels.unsqueeze(1))
@@ -158,6 +165,15 @@ class FocalLoss(nn.Module):
 
         # Calculate focal loss
         focal_weight = ((1 - pt) ** self.gamma).detach()  # Detach to prevent graph issues
+        
+        # Apply class-specific alpha weights if provided
+        if self.alpha is not None:
+            # Move alpha to same device as outputs
+            self.alpha = self.alpha.to(outputs.device)
+            # Get alpha weight for each sample based on its true class
+            alpha_t = self.alpha[labels].unsqueeze(1)
+            focal_weight = alpha_t * focal_weight
+        
         FL = -focal_weight * log_pt
 
         if not self.weighted:
