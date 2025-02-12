@@ -1,5 +1,7 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
+
 
 def distance_corr(var_1,var_2,normedweight,power=1):
     """var_1: First variable to decorrelate (eg mass)
@@ -73,12 +75,12 @@ class BCEDecorrelatedLoss(nn.Module):
         }
     
 class CrossEntropyWeightedLoss(nn.Module):  # Without decorrelation
-    def __init__(self, weighted=True , weights = [1,1,1,1,1]):
+    def __init__(self, weighted=True , class_weights = [1,1,1,1,1]):
 
         super().__init__()
         self.weighted = weighted
         # Use reduction='none' so we can apply custom weighting before averaging.
-        self.ce_loss = nn.CrossEntropyLoss(reduction='none', weight=torch.tensor(weights)) # For weighting classes (needs to match no. classes)
+        self.ce_loss = nn.CrossEntropyLoss(reduction='none', weight=torch.tensor(class_weights)) # For weighting classes (needs to match no. classes)
         # self.ce_loss = nn.CrossEntropyLoss(reduction='none')
 
     def forward(self, outputs, labels, event, weights=None): # We include the 'event' but this is used for decorrealted loss so we dont use it 
@@ -133,7 +135,36 @@ class CrossEntropyWeightedLoss_selective(nn.Module):  # Selective losses eg taki
 
         # Return the average loss over the batch.
         return topk_loss.mean()
-    
-# class FocalLoss(nn.Moduel):
-#     def __init__(self, alpha=1, gamma=2, reduction='mean'):
+
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=0, weighted=False):
+        super().__init__()
+
+        self.weighted = weighted
+        self.gamma = gamma
+        self.ce_loss = nn.CrossEntropyLoss(reduction='none')
+
+    def forward(self, outputs, labels, event, weights):
+
+        labels = labels.to(torch.long)
+        # If labels have an extra singleton dimension, squeeze it.
+        if labels.dim() == 2 and labels.shape[1] == 1:
+            labels = labels.squeeze(1)
+            
+        # Use log_softmax for numerical stability
+        log_softmax = F.log_softmax(outputs, dim=-1)
+        log_pt = torch.gather(log_softmax, dim=1, index=labels.unsqueeze(1))
+        pt = torch.exp(log_pt).clamp(min=1e-10, max=1.0)  # Clip probabilities
+
+        # Calculate focal loss
+        focal_weight = ((1 - pt) ** self.gamma).detach()  # Detach to prevent graph issues
+        FL = -focal_weight * log_pt
+
+        if not self.weighted:
+            weights = torch.ones((labels.shape[0],), device=outputs.device)
+
+        weighted_loss = FL.squeeze() * weights
+        
+        return weighted_loss.mean()
+
 
