@@ -184,3 +184,48 @@ class FocalLoss(nn.Module):
         return weighted_loss.mean()
 
 
+class FocalLoss_binary(nn.Module):
+    def __init__(self, gamma=2.0, alpha=None, weighted=False):
+        
+        super().__init__()
+        self.gamma = gamma
+        self.alpha = alpha
+        self.weighted = weighted
+
+    def forward(self, outputs, labels, event, weights=None):
+
+        # Convert labels to float and squeeze if necessary.
+        labels = labels.to(torch.float)
+        if labels.dim() == 2 and labels.shape[1] == 1:
+            labels = labels.squeeze(1)
+        
+        # If outputs come as (batch,1), squeeze to (batch,)
+        if outputs.dim() == 2 and outputs.shape[1] == 1:
+            outputs = outputs.squeeze(1)
+        
+        # Compute probabilities using sigmoid.
+        probs = torch.sigmoid(outputs)
+        # For each sample, p_t is the probability of the true class.
+        pt = torch.where(labels == 1, probs, 1 - probs)
+        pt = pt.clamp(min=1e-10, max=1.0)  # Avoid log(0)
+
+        # Compute the focal modulation factor. (Often people do not detach, but we follow your original.)
+        focal_weight = (1 - pt) ** self.gamma
+
+        # Apply alpha weighting if provided.
+        if self.alpha is not None:
+            # For positive samples use alpha; for negatives use (1 - alpha)
+            alpha_t = torch.where(labels == 1, self.alpha, 1 - self.alpha)
+            focal_weight = alpha_t * focal_weight
+
+        # Compute binary cross entropy components.
+        loss = - (labels * torch.log(pt) + (1 - labels) * torch.log(1 - pt))
+        loss = focal_weight * loss
+
+        # If per-sample weights are not provided or not used, set them to ones.
+        if (not self.weighted) or (weights is None):
+            weights = torch.ones_like(labels, device=outputs.device, dtype=outputs.dtype)
+        
+        weighted_loss = loss * weights
+
+        return weighted_loss.mean()
