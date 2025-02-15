@@ -35,6 +35,7 @@ datasets = [
     # ttbar processes 1
     'TTToSemiLeptonic',
     'TTTo2L2Nu',
+    'TTToHadronic',
 
     # Single top (tX) processes 1
     'ST_s-channel_4f_hadronicDecays',
@@ -95,13 +96,13 @@ df = remove_negative_events(df)
 class_mappings = {
     'ttH_HToInvisible_M125': 0,  # Signal
     'TTTo': 1,                   # ttbar
-    'ST_': 1,                    # Single top (same class as ttbar)
-    'ZJetsToNuNu': 2,           # Z+jets
+    'ST_': 2,                    # Single top (same class as ttbar)
+    'ZJetsToNuNu': 3,           # Z+jets
     'WJetsToLNu': 3,            # W+jets
     'WW': 4,                     # Multiboson
     'WZ': 4,
     'ZZ': 4,
-    'WWW': 4,
+    'WWW': 4,       
     'WWZ': 4,
     'WZZ': 4,
     'ZZZ': 4
@@ -147,7 +148,7 @@ event_level = get_event_level(df)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/prep_data/classes_4'
+path = '/home/pk21271/prep_data/ttH_ttbar_singleT_jets'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))
