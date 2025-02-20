@@ -161,6 +161,7 @@ class FocalLoss(nn.Module):
         # Use log_softmax for numerical stability
         log_softmax = F.log_softmax(outputs, dim=-1)
         log_pt = torch.gather(log_softmax, dim=1, index=labels.unsqueeze(1))
+
         pt = torch.exp(log_pt).clamp(min=1e-10, max=1.0)  # Clip probabilities
 
         # Calculate focal loss

@@ -37,23 +37,6 @@ datasets = [
     'TTTo2L2Nu',
     'TTToHadronic',
 
-    # Single top (tX) processes 1
-    'ST_s-channel_4f_hadronicDecays',
-    'ST_s-channel_4f_leptonDecays',
-    'ST_t-channel_antitop_4f_InclusiveDecays',
-    'ST_t-channel_top_4f_InclusiveDecays',
-    'ST_tW_antitop_5f_inclusiveDecays',
-    'ST_tW_top_5f_inclusiveDecays',
-
-    # Multiboson (diboson and triboson) processes 5
-    # 'WW',
-    # 'WZ',
-    # 'ZZ',
-    # 'WWW_4F',
-    # 'WWZ_4F',
-    # 'WZZ',
-    # 'ZZZ',
-
     # Z+jets processes 2
     'ZJetsToNuNu_HT-100To200',
     'ZJetsToNuNu_HT-200To400',
@@ -63,7 +46,7 @@ datasets = [
     'ZJetsToNuNu_HT-1200To2500',
     'ZJetsToNuNu_HT-2500ToInf',
 
-    # W+jets processes 3
+    # W+jets processes 2
     'WJetsToLNu_HT-70To100',
     'WJetsToLNu_HT-100To200',
     'WJetsToLNu_HT-200To400',
@@ -96,16 +79,9 @@ df = remove_negative_events(df)
 class_mappings = {
     'ttH_HToInvisible_M125': 0,  # Signal
     'TTTo': 1,                   # ttbar
-    'ST_': 2,                    # Single top (same class as ttbar)
-    'ZJetsToNuNu': 3,           # Z+jets
-    'WJetsToLNu': 3,            # W+jets
-    'WW': 4,                     # Multiboson
-    'WZ': 4,
-    'ZZ': 4,
-    'WWW': 4,       
-    'WWZ': 4,
-    'WZZ': 4,
-    'ZZZ': 4
+    'ZJetsToNuNu': 2,           # Z+jets
+    'WJetsToLNu': 2,            # W+jets
+
 }
 
 # Initialize class column
@@ -148,7 +124,7 @@ event_level = get_event_level(df)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/prep_data/ttH_ttbar_singleT_jets'
+path = '/home/pk21271/prep_data/ttH_ttbar_jets'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))
