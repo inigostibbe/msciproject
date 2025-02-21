@@ -215,8 +215,8 @@ class AnalysisObjectTransformer(L.LightningModule):
     
     def predict_step(self, batch, batch_idx):
         inputs, labels, weights, mask, event, phi, target = batch
-        outputs = self(inputs,padding_mask=mask) # Self.forward instead of self() for clarity
-        return outputs
+        outputs1, outputs2 = self.forward(inputs,padding_mask=mask) # Self.forward instead of self() for clarity
+        return outputs1, outputs2
 
     def shared_eval(self, batch, batch_idx, suffix):
         inputs, labels, weights, mask, event, phi, target = batch
