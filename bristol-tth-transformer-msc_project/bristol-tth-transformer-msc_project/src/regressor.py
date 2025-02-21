@@ -103,12 +103,12 @@ class AttBlock(nn.Module):
         return x
 
 class AnalysisObjectTransformer(L.LightningModule):
-    def __init__(self, embedding=None, embed_dim=64, output_dim=1, expansion_factor=2, encoder_layers=3, class_layers=3, dnn_layers=3, num_heads=8, hidden_activation=nn.GELU, output_activation=nn.Sigmoid, dropout=0, loss_function=None):
+    def __init__(self, embedding=None, embed_dim=64, output_dim=1, expansion_factor=2, encoder_layers=3, class_layers=3, dnn_layers=3, num_heads=8, hidden_activation=nn.GELU, output_activation=None, dropout=0, loss_function=None):
         super().__init__()
 
         # Embedding layer (assumed to be external)
         self.embedding = embedding
-
+ 
         # Three blocks of self-attention
         self.encoder_blocks = nn.ModuleList(
             [
@@ -121,20 +121,6 @@ class AnalysisObjectTransformer(L.LightningModule):
                 for _ in range(encoder_layers)
             ]
         )
-        self.class_blocks = nn.ModuleList(
-            [
-                AttBlock(
-                    embed_dim = embed_dim,
-                    expansion_factor = expansion_factor,
-                    num_heads = num_heads,
-                    activation = hidden_activation,
-                )
-                for _ in range(class_layers)
-            ]
-        )
-
-        # Class attention layers
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim), requires_grad=True)
 
         # Output linear layer and sigmoid activation
         layers = []
@@ -147,16 +133,13 @@ class AnalysisObjectTransformer(L.LightningModule):
             )
             if i < dnn_layers-1:
                 layers.append(hidden_activation())
-            else:
-                if output_activation is not None:
-                    layers.append(output_activation())
             layers.append(nn.Dropout(dropout))
         self.dnn = nn.Sequential(*layers)
 
         # Loss function #
         self.loss_function = loss_function # This is the classification loss
 
-    def forward(self, x, padding_mask=None, attn_mask=None):
+    def forward(self, x, padding_mask=None, attn_mask=None, met=None, phi=None):
 
         # Embedding layer
         if self.embedding is not None:
@@ -176,15 +159,19 @@ class AnalysisObjectTransformer(L.LightningModule):
         # Applying the attention blocks #
         for encoder_block in self.encoder_blocks:
             x = encoder_block(x,padding_mask=padding_mask,attn_mask=attn_mask)
-        cls_tokens = self.cls_token.expand(x.size(0), 1, -1) # (N, 1, C)
-        for class_block in self.class_blocks:
-            cls_tokens = class_block(x,x_cls=cls_tokens,padding_mask=padding_mask,attn_mask=attn_mask)
-
-        # Collapse sequence dimension #
-        cls_tokens = cls_tokens.squeeze(1) # This goes from (batch,1,C) to (batch,C) where C=binary output
 
         # Final dnn #
-        x = self.dnn(cls_tokens)
+        x = x.mean(dim=1)
+
+        # if met is not None and phi is not None:
+        #     # Here we can append the InputMet and InputPhi
+        #     print(x.shape)
+        #     torch.cat([x, met], dim=1)
+        #     print(x.shape)
+        #     torch.cat([x, phi],dim=1)
+        #     print(x.shape)
+
+        x = self.dnn(x)
 
         return x
 
