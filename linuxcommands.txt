@@ -21,3 +21,7 @@ git push origin main
 # Check GPU status
 nvidia-smi
 nvidia-smi --query-compute-apps=pid --format=csv,noheader | xargs -I {} ps -p {} -o pid,cmd --no-headers
+
+# Kill all python processes
+
+pkill -9 python

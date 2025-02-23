@@ -127,8 +127,8 @@ class AnalysisObjectTransformer(L.LightningModule):
         for i in range(dnn_layers):
             layers.append(
                 nn.Linear(
-                    embed_dim * expansion_factor if i > 0 else embed_dim,
-                    embed_dim * expansion_factor if i < dnn_layers-1 else 1,
+                    (embed_dim+1) * expansion_factor if i > 0 else (embed_dim+1),  # Adding one to the embed_dim for the reco_met that is appeneded after attention
+                    (embed_dim+1) * expansion_factor if i < dnn_layers-1 else 1,
                 )
             )
             if i < dnn_layers-1:
@@ -139,7 +139,7 @@ class AnalysisObjectTransformer(L.LightningModule):
         # Loss function #
         self.loss_function = loss_function # This is the classification loss
 
-    def forward(self, x, padding_mask=None, attn_mask=None, met=None, phi=None):
+    def forward(self, x, padding_mask=None, attn_mask=None, reco_met=None, phi=None):
 
         # Embedding layer
         if self.embedding is not None:
@@ -163,13 +163,12 @@ class AnalysisObjectTransformer(L.LightningModule):
         # Final dnn #
         x = x.mean(dim=1)
 
-        # if met is not None and phi is not None:
-        #     # Here we can append the InputMet and InputPhi
-        #     print(x.shape)
-        #     torch.cat([x, met], dim=1)
-        #     print(x.shape)
-        #     torch.cat([x, phi],dim=1)
-        #     print(x.shape)
+        if reco_met is not None:
+            # Here we can append the InputMet and InputPhi
+            x = torch.cat([x, reco_met], dim=1)
+        else:
+            # Stop training and raise an error
+            raise ValueError('reco_met is None') # This is to ensure that the dimensions are correct (leads to other issues)
 
         x = self.dnn(x)
 
@@ -177,14 +176,14 @@ class AnalysisObjectTransformer(L.LightningModule):
 
     def predict_step(self, batch, batch_idx):
         inputs, labels, weights, mask, event, phi, target = batch
-        outputs = self.forward(inputs,padding_mask=mask) # Self.forward instead of self() for clarity
+        outputs = self.forward(inputs,padding_mask=mask, reco_met=event) # Self.forward instead of self() for clarity
         return outputs
     
 
     def shared_eval(self, batch, batch_idx, suffix):
         inputs, labels, weights, mask, event, phi, target = batch
 
-        outputs = self.forward(inputs,padding_mask=mask) # This was self() before but now self.forward() for clarity
+        outputs = self.forward(inputs,padding_mask=mask, reco_met=event) # This was self() before but now self.forward() for clarity
 
         assert self.loss_function is not None
 

@@ -35,28 +35,28 @@ datasets = [
     'ttH_HToInvisible_M125', 
 
     # ttbar processes 1
-    'TTToSemiLeptonic',
-    'TTTo2L2Nu',
-    'TTToHadronic',
+    # 'TTToSemiLeptonic',
+    # 'TTTo2L2Nu',
+    # 'TTToHadronic',
 
-    # Z+jets processes 2
-    'ZJetsToNuNu_HT-100To200',
-    'ZJetsToNuNu_HT-200To400',
-    'ZJetsToNuNu_HT-400To600',
-    'ZJetsToNuNu_HT-600To800',
-    'ZJetsToNuNu_HT-800To1200',
-    'ZJetsToNuNu_HT-1200To2500',
-    'ZJetsToNuNu_HT-2500ToInf',
+    # # Z+jets processes 2
+    # 'ZJetsToNuNu_HT-100To200',
+    # 'ZJetsToNuNu_HT-200To400',
+    # 'ZJetsToNuNu_HT-400To600',
+    # 'ZJetsToNuNu_HT-600To800',
+    # 'ZJetsToNuNu_HT-800To1200',
+    # 'ZJetsToNuNu_HT-1200To2500',
+    # 'ZJetsToNuNu_HT-2500ToInf',
 
-    # W+jets processes 2
-    'WJetsToLNu_HT-70To100',
-    'WJetsToLNu_HT-100To200',
-    'WJetsToLNu_HT-200To400',
-    'WJetsToLNu_HT-400To600',
-    'WJetsToLNu_HT-600To800',
-    'WJetsToLNu_HT-800To1200',
-    'WJetsToLNu_HT-1200To2500',
-    'WJetsToLNu_HT-2500ToInf'
+    # # W+jets processes 2
+    # 'WJetsToLNu_HT-70To100',
+    # 'WJetsToLNu_HT-100To200',
+    # 'WJetsToLNu_HT-200To400',
+    # 'WJetsToLNu_HT-400To600',
+    # 'WJetsToLNu_HT-600To800',
+    # 'WJetsToLNu_HT-800To1200',
+    # 'WJetsToLNu_HT-1200To2500',
+    # 'WJetsToLNu_HT-2500ToInf'
 ]
 
 years = ['2018']
@@ -80,9 +80,9 @@ df = remove_negative_events(df)
 # Define class mappings
 class_mappings = {
     'ttH_HToInvisible_M125': 0,  # Signal
-    'TTTo': 1,                   # ttbar
-    'ZJetsToNuNu': 2,           # Z+jets
-    'WJetsToLNu': 2,            # W+jets
+    # 'TTTo': 1,                   # ttbar
+    # 'ZJetsToNuNu': 2,           # Z+jets
+    # 'WJetsToLNu': 2,            # W+jets
 }
 
 # Initialize class column
@@ -122,7 +122,7 @@ target_reg = torch.tensor(df['GenMET_pt'].values)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/prep_data/ttH_ttbar_jets_regressor'
+path = '/home/pk21271/prep_data/ttH_regressor'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))
