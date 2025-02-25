@@ -32,10 +32,10 @@ path = '/cephfs/dice/projects/CMS/Hinv/ml_datasets_ul_241111/ml_inputs_UL2018/{d
 
 datasets = [
     # Signal 0
-    'ttH_HToInvisible_M125', 
+    # 'ttH_HToInvisible_M125', 
 
     # ttbar processes 1
-    # 'TTToSemiLeptonic',
+    'TTToSemiLeptonic',
     # 'TTTo2L2Nu',
     # 'TTToHadronic',
 
@@ -79,8 +79,8 @@ df = remove_negative_events(df)
 
 # Define class mappings
 class_mappings = {
-    'ttH_HToInvisible_M125': 0,  # Signal
-    # 'TTTo': 1,                   # ttbar
+    # 'ttH_HToInvisible_M125': 0,  # Signal
+    'TTTo': 1,                   # ttbar
     # 'ZJetsToNuNu': 2,           # Z+jets
     # 'WJetsToLNu': 2,            # W+jets
 }
@@ -122,7 +122,7 @@ target_reg = torch.tensor(df['GenMET_pt'].values)
 
 # Now save X,y, pad_mask
 
-path = '/home/pk21271/prep_data/ttH_regressor'
+path = '/home/pk21271/prep_data/semileptonic_regressor'
 
 torch.save(X, os.path.join(path, 'X.pt'))
 torch.save(y, os.path.join(path, 'y.pt'))
