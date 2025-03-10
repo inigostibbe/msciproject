@@ -8,7 +8,7 @@ from scipy.stats import pearsonr
 import torch
 
 
-def plot_inputs_per_multiplicity(inputs, labels, mask, bins, weights=None, log=False, outdir=None,show=False):
+def plot_inputs_per_multiplicity(inputs, labels, mask, bins, weights=None, log=False, outdir=None,show=False , density=False, alpha=1):
     n_parts = inputs.size(1)
     n_vars = inputs.size(2)
 
@@ -25,6 +25,8 @@ def plot_inputs_per_multiplicity(inputs, labels, mask, bins, weights=None, log=F
                 histtype = 'step',
                 color = colors[j],
                 weights = weights[mask[:,j]] if weights is not None else None,
+                density = density,
+                alpha = alpha
             )
         axs[i].set_xlabel(f'var {i}')
         if log:
@@ -79,40 +81,9 @@ def plot_inputs_per_label(inputs, labels, mask, bins, weights=None, log=False, o
     if show:
         plt.show()
     return fig
-def plot_inputs_per_label_multi(inputs, labels, mask, bins, weights=None, log=False, outdir=None, show=False, density=False, class_labels=None):
-    """
-    Plots histograms for each feature (n_vars) split by class labels.
-    Assumes labels are already class-coded (e.g. 0, 1, 2, ...).
 
-    Parameters:
-    -----------
-    inputs : torch.Tensor
-        Tensor of shape [batch_size, n_parts, n_vars].
-    labels : torch.Tensor
-        Tensor containing class labels (integers). Expected shape is [batch_size].
-    mask : torch.Tensor
-        Boolean tensor of shape [batch_size, n_parts] to select valid particles.
-    bins : int
-        Number of bins for the histograms.
-    weights : torch.Tensor, optional
-        Optional per-event weights of shape [batch_size] that will be expanded to [batch_size, n_parts].
-    log : bool, optional
-        Whether to use a log scale for the y-axis.
-    outdir : str, optional
-        If provided, the figure will be saved to this directory.
-    show : bool, optional
-        Whether to display the plot.
-    density : bool, optional
-        If True, the histogram is normalized to form a probability density.
-    class_labels : dict, optional
-        Dictionary mapping class indices to a tuple (class_name, color).
-        If None, the function auto-generates labels and colors for the unique classes.
-
-    Returns:
-    --------
-    matplotlib.figure.Figure
-        The created figure.
-    """
+def plot_inputs_per_label_multi(inputs, labels, mask, bins, weights=None, log=False, outdir=None, show=False, density=False, class_labels=None, alpha=1):
+   
     import numpy as np
     import matplotlib.pyplot as plt
     import torch
@@ -161,6 +132,7 @@ def plot_inputs_per_label_multi(inputs, labels, mask, bins, weights=None, log=Fa
                 label=class_name,
                 weights=weights[valid_mask] if weights is not None else None,
                 density=density,
+                alpha=alpha,
             )
 
         axs[i].set_xlabel(f'Feature {i}')

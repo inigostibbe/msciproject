@@ -79,10 +79,10 @@ df = remove_negative_events(df)
 
 # Define class mappings
 class_mappings = {
-    # 'ttH_HToInvisible_M125': 0,  # Signal
+    'ttH_HToInvisible_M125': 0,  # Signal
     'TTTo': 1,                   # ttbar
-    # 'ZJetsToNuNu': 2,           # Z+jets
-    # 'WJetsToLNu': 2,            # W+jets
+    'ZJetsToNuNu': 2,           # Z+jets
+    'WJetsToLNu': 2,            # W+jets
 }
 
 # Initialize class column
